@@ -148,11 +148,21 @@
       submitBtn.disabled = true;
       submitBtn.innerText = 'Publishing...';
 
+      let rawUrl = document.getElementById('assetUrl').value.trim();
+
+      // Convert standard Google Drive link to Direct Download format
+      if (rawUrl.includes('drive.google.com') && rawUrl.includes('/file/d/')) {
+        const fileIdMatch = rawUrl.match(/\/file\/d\/([^\/\?]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          rawUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+        }
+      }
+
       const payload = {
         title: document.getElementById('assetTitle').value.trim(),
         category: document.getElementById('assetCategory').value,
         file_size: document.getElementById('assetSize').value.trim(),
-        download_url: document.getElementById('assetUrl').value.trim()
+        download_url: rawUrl
       };
 
       const { data, error } = await supabaseClient
@@ -164,7 +174,7 @@
       } else {
         document.getElementById('uploadForm').reset();
         fetchAssets();
-        alert('Published Successfully! 🚀');
+        alert('Published Successfully with Direct Download Link! 🚀');
       }
 
       submitBtn.disabled = false;
