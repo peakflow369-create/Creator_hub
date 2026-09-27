@@ -16,7 +16,6 @@
 <body class="p-4 md:p-8 min-h-screen">
 
   <div class="max-w-3xl mx-auto">
-    <!-- Header -->
     <header class="mb-6 flex justify-between items-center border-b border-slate-800 pb-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400">ADM</div>
@@ -30,7 +29,6 @@
       </span>
     </header>
 
-    <!-- Upload Form -->
     <section class="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 shadow-xl">
       <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
         <span>➕</span> Add New Asset to Vault
@@ -70,7 +68,6 @@
       </form>
     </section>
 
-    <!-- Inventory / Live Database Assets -->
     <section>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -162,19 +159,22 @@
             'apikey': SUPABASE_KEY,
             'Authorization': 'Bearer ' + SUPABASE_KEY,
             'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+            'Prefer': 'return=representation'
           },
           body: JSON.stringify(payload)
         });
 
+        const data = await res.json();
+
         if (res.ok) {
           document.getElementById('uploadForm').reset();
           fetchAssets();
+          alert('Asset Published Successfully! 🚀');
         } else {
-          alert('Failed to publish asset. Check table permissions in Supabase.');
+          alert(`Database Error: ${data.message || JSON.stringify(data)}`);
         }
       } catch (err) {
-        alert('Network error while publishing.');
+        alert(`Network Error: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Publish Asset to Database 🚀';
@@ -203,7 +203,6 @@
       }
     }
 
-    // Load inventory on boot
     fetchAssets();
   </script>
 
