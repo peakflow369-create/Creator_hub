@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Vault UI</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0b0f19; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 16px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
+    h1 { font-size: 1.25rem; font-weight: 700; color: #38bdf8; }
+    .badge { background: #0284c7; font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+
+    .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 10px; font-weight: 600; }
+
+    .categories { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 20px; }
+    .chip { background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; white-space: nowrap; }
+    .chip.active { background: #0284c7; color: white; border-color: #38bdf8; font-weight: 600; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .card { background: #1e293b; border-radius: 10px; overflow: hidden; border: 1px solid #334155; }
+    .card-preview { background: #151d30; height: 100px; display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.8rem; }
+    .card-info { padding: 10px; }
+    .card-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #f1f5f9; }
+    .card-meta { font-size: 0.7rem; color: #64748b; display: flex; justify-content: space-between; }
+    .btn { background: #0284c7; color: white; border: none; padding: 6px 10px; width: 100%; border-radius: 6px; font-size: 0.75rem; margin-top: 8px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Creator Vault</h1>
+    <span class="badge" id="status-badge">Live</span>
+  </header>
+
+  <div class="section-title">Categories</div>
+  <div class="categories" id="cat-container">
+    <div class="chip active">All</div>
+    <div class="chip">SFX Packs</div>
+    <div class="chip">Overlays</div>
+    <div class="chip">LUTs</div>
+    <div class="chip">Presets</div>
+  </div>
+
+  <div class="section-title">Library</div>
+  <div class="grid" id="asset-grid">
+    <div class="card">
+      <div class="card-preview">🔊</div>
+      <div class="card-info">
+        <div class="card-title">Cinematic Whoosh</div>
+        <div class="card-meta"><span>SFX</span><span>2.4 MB</span></div>
+        <button class="btn">Download</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-preview">🎬</div>
+      <div class="card-info">
+        <div class="card-title">4K Film Grain</div>
+        <div class="card-meta"><span>Overlay</span><span>45 MB</span></div>
+        <button class="btn">Download</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-preview">🎨</div>
+      <div class="card-info">
+        <div class="card-title">Teal & Orange LUT</div>
+        <div class="card-meta"><span>Preset</span><span>1.1 MB</span></div>
+        <button class="btn">Download</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-preview">⚡</div>
+      <div class="card-info">
+        <div class="card-title">Fast Transition Pack</div>
+        <div class="card-meta"><span>Preset</span><span>12 MB</span></div>
+        <button class="btn">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://bukpvrphgjoqrffwlwys.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FB93AZKw6tW8tVJpPlD3eA_8ygbt67J';
+
+    async function loadData() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/categories?select=*`, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if(res.ok) {
+          document.getElementById('status-badge').innerText = 'Connected';
+        }
+      } catch(e) {
+        document.getElementById('status-badge').innerText = 'Offline';
+      }
+    }
+    loadData();
+  </script>
+</body>
+</html>
