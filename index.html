@@ -5,83 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Creator Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Official Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       background-color: #080c14;
       color: #f3f4f6;
       font-family: system-ui, -apple-system, sans-serif;
     }
+
+    /* Custom Keyframe Animations for App Splash Opening */
+    @keyframes splashPulse {
+      0% { transform: scale(0.85); opacity: 0; filter: blur(10px); }
+      50% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 0.8; transform: scale(1.2); }
+    }
+
+    .animate-splash-logo {
+      animation: splashPulse 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-glow {
+      animation: glowPulse 2s ease-in-out infinite;
+    }
   </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="p-4 md:p-8 min-h-screen relative overflow-x-hidden">
 
-  <!-- Header Section -->
-  <header class="mb-6 flex justify-between items-center border-b border-slate-800/80 pb-4">
-    <div class="flex items-center gap-3">
-      <!-- App Logo -->
-      <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center font-bold text-cyan-400">TCH</div>
-      <div>
-        <h1 class="text-xl font-black text-cyan-400 tracking-wide">THE CREATOR HUB</h1>
-        <p class="text-xs text-slate-400">@peakflowio • Asset Vault</p>
+  <!-- APP OPENING ANIMATION OVERLAY -->
+  <div id="splashScreen" class="fixed inset-0 z-50 bg-[#080c14] flex flex-col items-center justify-center transition-opacity duration-700 pointer-events-auto">
+    <!-- Ambient Glow Background -->
+    <div class="absolute w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl animate-glow pointer-events-none"></div>
+
+    <!-- Animated Branding Badge -->
+    <div class="relative z-10 flex flex-col items-center animate-splash-logo">
+      <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500/20 via-slate-900 to-cyan-500/10 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.25)] mb-4">
+        <span class="font-black text-2xl text-cyan-400 tracking-wider">TCH</span>
+      </div>
+      <h1 class="text-2xl font-black text-white tracking-widest text-center">THE CREATOR HUB</h1>
+      <p class="text-xs text-cyan-400 font-mono tracking-widest uppercase mt-1">@peakflowio • Asset Vault</p>
+      
+      <!-- Minimalist Loading Indicator Bar -->
+      <div class="w-32 h-1 bg-slate-800 rounded-full mt-6 overflow-hidden relative">
+        <div class="w-full h-full bg-cyan-400 rounded-full animate-[pulse_1s_infinite]"></div>
       </div>
     </div>
-    <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs px-3 py-1 rounded-full font-mono">v2.0 Hybrid</span>
-  </header>
+  </div>
 
-  <!-- Category Selection Section -->
-  <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <!-- MAIN APP CONTAINER -->
+  <div id="appContent" class="opacity-0 transition-opacity duration-700">
 
-    <!-- SFX Pack Card -->
-    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
-      <div>
-        <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🔊</div>
-        <h2 class="font-bold text-base text-white">Cinematic Whoosh SFX</h2>
-        <p class="text-xs text-slate-400 mt-1 mb-4">High Quality Sound Effects & Transitions</p>
+    <!-- Header Section -->
+    <header class="mb-6 flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <div class="flex items-center gap-3">
+        <!-- App Logo -->
+        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center font-bold text-cyan-400">TCH</div>
+        <div>
+          <h1 class="text-xl font-black text-cyan-400 tracking-wide">THE CREATOR HUB</h1>
+          <p class="text-xs text-slate-400">@peakflowio • Asset Vault</p>
+        </div>
       </div>
-      <button onclick="openVaultModal('SFX Packs', 'https://drive.google.com/drive/folders/1vwJLqIEzDNXOapIzxnpNmJXfPiMLUVMI')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
-        Open SFX Vault
-      </button>
-    </div>
+      <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs px-3 py-1 rounded-full font-mono">v2.0 Hybrid</span>
+    </header>
 
-    <!-- Overlay Card -->
-    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
-      <div>
-        <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🎞️</div>
-        <h2 class="font-bold text-base text-white">4K Film Grain Overlay</h2>
-        <p class="text-xs text-slate-400 mt-1 mb-4">Realistic Retro Textures & Video Overlays</p>
+    <!-- Category Selection Section -->
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- SFX Pack Card -->
+      <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
+        <div>
+          <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🔊</div>
+          <h2 class="font-bold text-base text-white">Cinematic Whoosh SFX</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-4">High Quality Sound Effects & Transitions</p>
+        </div>
+        <button onclick="openVaultModal('SFX Packs', 'https://drive.google.com/drive/folders/1vwJLqIEzDNXOapIzxnpNmJXfPiMLUVMI')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+          Open SFX Vault
+        </button>
       </div>
-      <button onclick="openVaultModal('Overlays', 'https://drive.google.com/drive/folders/1RKP49DJUzR-mmasWaFoMmqamD1K2tU3L')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
-        Open Overlay Vault
-      </button>
-    </div>
 
-    <!-- LUTs Card -->
-    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
-      <div>
-        <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🎨</div>
-        <h2 class="font-bold text-base text-white">Teal & Orange LUT Pack</h2>
-        <p class="text-xs text-slate-400 mt-1 mb-4">Professional Color Grading Presets</p>
+      <!-- Overlay Card -->
+      <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
+        <div>
+          <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🎞️</div>
+          <h2 class="font-bold text-base text-white">4K Film Grain Overlay</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-4">Realistic Retro Textures & Video Overlays</p>
+        </div>
+        <button onclick="openVaultModal('Overlays', 'https://drive.google.com/drive/folders/1RKP49DJUzR-mmasWaFoMmqamD1K2tU3L')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+          Open Overlay Vault
+        </button>
       </div>
-      <button onclick="openVaultModal('LUTs', 'https://drive.google.com/drive/folders/1MDXU0DMzD8gRBjSKko7KwIGRZqC5Ex34')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
-        Open LUT Vault
-      </button>
-    </div>
 
-    <!-- Presets Card -->
-    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
-      <div>
-        <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">⚡</div>
-        <h2 class="font-bold text-base text-white">Motion Transitions Pack</h2>
-        <p class="text-xs text-slate-400 mt-1 mb-4">Smooth Premiere & After Effects Presets</p>
+      <!-- LUTs Card -->
+      <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
+        <div>
+          <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">🎨</div>
+          <h2 class="font-bold text-base text-white">Teal & Orange LUT Pack</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-4">Professional Color Grading Presets</p>
+        </div>
+        <button onclick="openVaultModal('LUTs', 'https://drive.google.com/drive/folders/1MDXU0DMzD8gRBjSKko7KwIGRZqC5Ex34')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+          Open LUT Vault
+        </button>
       </div>
-      <button onclick="openVaultModal('Presets', 'https://drive.google.com/drive/folders/1VcRidY6pHKRcQBrzEDy_TDwVKcGrs9yH')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
-        Open Presets Vault
-      </button>
-    </div>
 
-  </main>
+      <!-- Presets Card -->
+      <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
+        <div>
+          <div class="h-24 bg-slate-800/50 rounded-lg mb-3 flex items-center justify-center text-3xl">⚡</div>
+          <h2 class="font-bold text-base text-white">Motion Transitions Pack</h2>
+          <p class="text-xs text-slate-400 mt-1 mb-4">Smooth Premiere & After Effects Presets</p>
+        </div>
+        <button onclick="openVaultModal('Presets', 'https://drive.google.com/drive/folders/1VcRidY6pHKRcQBrzEDy_TDwVKcGrs9yH')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+          Open Presets Vault
+        </button>
+      </div>
 
-  <!-- WAY 1 + WAY 2: Detail Asset Modal (New Screen) -->
+    </main>
+
+  </div>
+
+  <!-- Detail Asset Modal -->
   <div id="vaultModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex-col justify-end sm:justify-center p-0 sm:p-6 z-50">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl mx-auto rounded-t-2xl sm:rounded-2xl p-6 flex flex-col max-h-[85vh] shadow-2xl">
       
@@ -114,6 +161,43 @@
     const SUPABASE_URL = 'https://bukpvrphgjoqrffwlwys.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FB93AZKw6tW8tVJpPlD3eA_8ygbt67J';
 
+    // Initialize official Supabase Client
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // App Opening Animation Handling
+    window.addEventListener('DOMContentLoaded', () => {
+      const splashScreen = document.getElementById('splashScreen');
+      const appContent = document.getElementById('appContent');
+
+      // Hold splash screen for 1.6 seconds, then fade out smoothly
+      setTimeout(() => {
+        splashScreen.classList.add('opacity-0');
+        splashScreen.classList.add('pointer-events-none');
+        appContent.classList.remove('opacity-0');
+
+        // Unmount splash screen after fade duration finishes
+        setTimeout(() => {
+          splashScreen.style.display = 'none';
+        }, 700);
+      }, 1600);
+    });
+
+    // Extract raw Google Drive File ID and convert to direct binary download format
+    function normalizeDirectDownloadLink(url) {
+      if (!url) return '#';
+      let fileId = '';
+      if (url.includes('/file/d/')) {
+        fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
+      } else if (url.includes('id=')) {
+        fileId = url.split('id=')[1].split('&')[0];
+      }
+
+      if (fileId) {
+        return `https://drive.google.com/uc?id=${fileId}&export=download`;
+      }
+      return url;
+    }
+
     async function openVaultModal(category, driveLink) {
       const modal = document.getElementById('vaultModal');
       const modalTitle = document.getElementById('modalTitle');
@@ -128,18 +212,20 @@
       modal.classList.add('flex');
 
       try {
-        // Fetch items from Supabase matching the clicked category
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/assets?category=eq.${encodeURIComponent(category)}&order=created_at.desc`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-          }
-        });
-        const items = await res.json();
+        // Query Supabase database using SDK
+        const { data: items, error } = await supabaseClient
+          .from('assets')
+          .select('*')
+          .eq('category', category)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
 
         if (items && items.length > 0) {
           modalContent.innerHTML = '';
           items.forEach(item => {
+            const directUrl = normalizeDirectDownloadLink(item.download_url);
+            
             modalContent.innerHTML += `
               <div class="bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 overflow-hidden">
@@ -149,14 +235,13 @@
                     <p class="text-[10px] text-slate-400">${item.file_size}</p>
                   </div>
                 </div>
-                <a href="${item.download_url}" target="_blank" download class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition">
+                <a href="${directUrl}" download target="_self" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition">
                   Download
                 </a>
               </div>
             `;
           });
         } else {
-          // If no dynamic items uploaded yet, show fallback
           modalContent.innerHTML = `
             <div class="text-center py-8 bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
               <p class="text-xs text-slate-400 mb-2">No individual audio files uploaded via Admin App yet.</p>
@@ -165,7 +250,7 @@
           `;
         }
       } catch (err) {
-        modalContent.innerHTML = '<p class="text-xs text-red-400 text-center py-6">Failed to load live files.</p>';
+        modalContent.innerHTML = `<p class="text-xs text-red-400 text-center py-6">Failed to load live files: ${err.message || err}</p>`;
       }
     }
 
