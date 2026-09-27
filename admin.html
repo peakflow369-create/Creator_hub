@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TCH - Admin Control Panel</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Official Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
@@ -18,7 +17,6 @@
 <body class="p-4 md:p-8 min-h-screen">
 
   <div class="max-w-3xl mx-auto">
-    <!-- Header -->
     <header class="mb-6 flex justify-between items-center border-b border-slate-800 pb-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400">ADM</div>
@@ -32,7 +30,6 @@
       </span>
     </header>
 
-    <!-- Upload Form -->
     <section class="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 shadow-xl">
       <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
         <span>➕</span> Add New Asset to Vault
@@ -63,7 +60,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Direct Download URL / Drive Link</label>
-          <input type="url" id="assetUrl" required placeholder="https://drive.google.com/file/d/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400">
+          <input type="text" id="assetUrl" required placeholder="Paste Google Drive share link here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400">
         </div>
 
         <button type="submit" id="submitBtn" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-lg">
@@ -72,7 +69,6 @@
       </form>
     </section>
 
-    <!-- Inventory / Live Database Assets -->
     <section>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -91,8 +87,23 @@
     const SUPABASE_URL = 'https://bukpvrphgjoqrffwlwys.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FB93AZKw6tW8tVJpPlD3eA_8ygbt67J';
 
-    // Initialize official Supabase Client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Extract raw Google Drive File ID from any share link format
+    function convertToDirectDownloadLink(url) {
+      let fileId = '';
+      
+      if (url.includes('/file/d/')) {
+        fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
+      } else if (url.includes('id=')) {
+        fileId = url.split('id=')[1].split('&')[0];
+      }
+
+      if (fileId) {
+        return `https://drive.google.com/uc?id=${fileId}&export=download`;
+      }
+      return url; // fallback if not a recognized Drive link
+    }
 
     async function fetchAssets() {
       const container = document.getElementById('inventoryContainer');
@@ -148,21 +159,14 @@
       submitBtn.disabled = true;
       submitBtn.innerText = 'Publishing...';
 
-      let rawUrl = document.getElementById('assetUrl').value.trim();
-
-      // Convert standard Google Drive link to Direct Download format
-      if (rawUrl.includes('drive.google.com') && rawUrl.includes('/file/d/')) {
-        const fileIdMatch = rawUrl.match(/\/file\/d\/([^\/\?]+)/);
-        if (fileIdMatch && fileIdMatch[1]) {
-          rawUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
-        }
-      }
+      let inputUrl = document.getElementById('assetUrl').value.trim();
+      let directUrl = convertToDirectDownloadLink(inputUrl);
 
       const payload = {
         title: document.getElementById('assetTitle').value.trim(),
         category: document.getElementById('assetCategory').value,
         file_size: document.getElementById('assetSize').value.trim(),
-        download_url: rawUrl
+        download_url: directUrl
       };
 
       const { data, error } = await supabaseClient
@@ -174,7 +178,7 @@
       } else {
         document.getElementById('uploadForm').reset();
         fetchAssets();
-        alert('Published Successfully with Direct Download Link! 🚀');
+        alert('Asset Published with Direct Download Link! 🚀');
       }
 
       submitBtn.disabled = false;
