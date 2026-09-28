@@ -83,7 +83,7 @@
           <h2 class="font-bold text-base text-white">Cinematic Whoosh SFX</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">High Quality Sound Effects & Transitions</p>
         </div>
-        <button onclick="openVaultModal('SFX Packs', 'https://drive.google.com/drive/folders/1vwJLqIEzDNXOapIzxnpNmJXfPiMLUVMI')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('sfx', 'SFX Vault', 'https://drive.google.com/drive/folders/1vwJLqIEzDNXOapIzxnpNmJXfPiMLUVMI')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open SFX Vault
         </button>
       </div>
@@ -95,7 +95,7 @@
           <h2 class="font-bold text-base text-white">4K Film Grain Overlay</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Realistic Retro Textures & Video Overlays</p>
         </div>
-        <button onclick="openVaultModal('Overlays', 'https://drive.google.com/drive/folders/1RKP49DJUzR-mmasWaFoMmqamD1K2tU3L')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('overlay', 'Overlay Vault', 'https://drive.google.com/drive/folders/1RKP49DJUzR-mmasWaFoMmqamD1K2tU3L')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open Overlay Vault
         </button>
       </div>
@@ -107,7 +107,7 @@
           <h2 class="font-bold text-base text-white">Teal & Orange LUT Pack</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Professional Color Grading Presets</p>
         </div>
-        <button onclick="openVaultModal('LUTs', 'https://drive.google.com/drive/folders/1MDXU0DMzD8gRBjSKko7KwIGRZqC5Ex34')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('lut', 'LUT Vault', 'https://drive.google.com/drive/folders/1MDXU0DMzD8gRBjSKko7KwIGRZqC5Ex34')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open LUT Vault
         </button>
       </div>
@@ -119,7 +119,7 @@
           <h2 class="font-bold text-base text-white">Motion Transitions Pack</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Smooth Premiere & After Effects Presets</p>
         </div>
-        <button onclick="openVaultModal('Presets', 'https://drive.google.com/drive/folders/1VcRidY6pHKRcQBrzEDy_TDwVKcGrs9yH')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('presets', 'Presets Vault', 'https://drive.google.com/drive/folders/1VcRidY6pHKRcQBrzEDy_TDwVKcGrs9yH')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open Presets Vault
         </button>
       </div>
@@ -203,20 +203,19 @@
 
     /**
      * Builds proxy stream and download URL for Backblaze B2 assets
-     * @param {string} fileName - Exact filename in Backblaze B2 bucket
      */
     function getProxyUrl(fileName) {
       if (!fileName) return '#';
       return `${WORKER_PROXY_URL}?file=${encodeURIComponent(fileName)}`;
     }
 
-    async function openVaultModal(category, driveLink) {
+    async function openVaultModal(categoryKey, displayTitle, driveLink) {
       const modal = document.getElementById('vaultModal');
       const modalTitle = document.getElementById('modalTitle');
       const modalContent = document.getElementById('modalContent');
       const driveFolderBtn = document.getElementById('driveFolderBtn');
 
-      modalTitle.innerText = category + ' Assets';
+      modalTitle.innerText = displayTitle;
       driveFolderBtn.href = driveLink;
       modalContent.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Connecting to Asset Proxy...</p>';
       
@@ -224,11 +223,14 @@
       modal.classList.add('flex');
 
       try {
-        // Fetch live records from Supabase
+        // Clean key for robust matching
+        const cleanCategory = categoryKey.toLowerCase().trim();
+
+        // Fetch live records using case-insensitive search (.ilike)
         const { data: items, error } = await supabaseClient
           .from('assets')
           .select('*')
-          .eq('category', category)
+          .ilike('category', `%${cleanCategory}%`)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -238,7 +240,7 @@
           items.forEach((item, index) => {
             const targetFileName = item.file_name || item.title;
             const fileStreamUrl = getProxyUrl(targetFileName);
-            const isAudioCategory = category === 'SFX Packs' || category === 'SFX';
+            const isAudioCategory = cleanCategory === 'sfx';
 
             modalContent.innerHTML += `
               <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-xl flex flex-col gap-3">
