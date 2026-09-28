@@ -41,12 +41,12 @@
         </div>
 
         <div>
-          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Category</label>
+          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Target Section / Vault</label>
           <select id="assetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
-            <option value="SFX Packs">SFX Packs</option>
-            <option value="Audio Elements">Audio Elements</option>
-            <option value="Video Assets">Video Assets</option>
-            <option value="Presets">Presets</option>
+            <option value="sfx">SFX Vault (Whoosh, Riser, Audio)</option>
+            <option value="overlay">Overlay Vault (Film Grain, Textures)</option>
+            <option value="lut">LUT Vault (Color Presets, LUTs)</option>
+            <option value="presets">Presets Vault (Transitions, Motion)</option>
           </select>
         </div>
 
@@ -124,7 +124,6 @@
         const formData = new FormData();
         formData.append('file', file);
 
-        // Upload Request to Worker
         const uploadRes = await fetch(`${WORKER_URL}/upload`, {
           method: 'POST',
           body: formData
@@ -142,13 +141,14 @@
 
         const uploadedFileName = uploadData.file_name;
         const uploadedFileId = uploadData.file_id || null;
+        const selectedVault = document.getElementById('assetCategory').value;
 
         submitBtn.innerText = '2/2 Saving to Supabase Database... 🔄';
 
-        // Insert to Supabase Database
         const payload = {
           title: document.getElementById('assetTitle').value.trim(),
-          category: document.getElementById('assetCategory').value,
+          category: selectedVault.toUpperCase(),
+          vault_type: selectedVault,
           file_size: document.getElementById('assetSize').value,
           file_name: uploadedFileName,
           file_id: uploadedFileId
@@ -160,7 +160,7 @@
 
         if (error) throw error;
 
-        alert('Success! File B2 par upload ho gayi aur Database update ho gaya! 🚀');
+        alert(`Success! File uploaded and targeted to ${selectedVault.toUpperCase()} Vault! 🚀`);
         document.getElementById('uploadForm').reset();
         fetchAssets();
 
@@ -195,7 +195,7 @@
           <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-lg flex items-center justify-between text-xs gap-2">
             <div class="overflow-hidden">
               <p class="font-medium text-slate-200 truncate">${item.title}</p>
-              <p class="text-slate-500 mt-0.5">${item.category} • ${item.file_size}</p>
+              <p class="text-slate-500 mt-0.5">Vault: <span class="text-amber-400 font-bold">${item.vault_type || item.category}</span> • ${item.file_size}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <a href="${WORKER_URL}?file=${encodeURIComponent(item.file_name)}" target="_blank" 
@@ -221,7 +221,6 @@
       }
 
       try {
-        // 1. Worker me B2 delete request bhejo
         const deleteRes = await fetch(`${WORKER_URL}/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -236,7 +235,6 @@
           console.warn(`B2 Delete Warning: ${errText}`);
         }
 
-        // 2. Supabase DB se Delete karo
         const { error } = await supabaseClient
           .from('assets')
           .delete()
@@ -244,7 +242,7 @@
 
         if (error) throw error;
 
-        alert('Asset successfully deleted from B2 & Supabase! 🗑️');
+        alert('Asset deleted successfully! 🗑️');
         fetchAssets();
 
       } catch (err) {
@@ -253,7 +251,6 @@
       }
     }
 
-    // Load inventory on startup
     fetchAssets();
   </script>
 </body>
