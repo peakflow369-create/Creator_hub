@@ -141,6 +141,7 @@
         }
 
         const uploadedFileName = uploadData.file_name;
+        const uploadedFileId = uploadData.file_id || null;
 
         submitBtn.innerText = '2/2 Saving to Supabase Database... 🔄';
 
@@ -149,7 +150,8 @@
           title: document.getElementById('assetTitle').value.trim(),
           category: document.getElementById('assetCategory').value,
           file_size: document.getElementById('assetSize').value,
-          file_name: uploadedFileName
+          file_name: uploadedFileName,
+          file_id: uploadedFileId
         };
 
         const { error } = await supabaseClient
@@ -190,20 +192,64 @@
         }
 
         listContainer.innerHTML = data.map(item => `
-          <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-lg flex items-center justify-between text-xs">
-            <div>
-              <p class="font-medium text-slate-200">${item.title}</p>
+          <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-lg flex items-center justify-between text-xs gap-2">
+            <div class="overflow-hidden">
+              <p class="font-medium text-slate-200 truncate">${item.title}</p>
               <p class="text-slate-500 mt-0.5">${item.category} • ${item.file_size}</p>
             </div>
-            <a href="${WORKER_URL}?file=${encodeURIComponent(item.file_name)}" target="_blank" 
-               class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded transition">
-              Test Stream
-            </a>
+            <div class="flex items-center gap-2 shrink-0">
+              <a href="${WORKER_URL}?file=${encodeURIComponent(item.file_name)}" target="_blank" 
+                 class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded transition">
+                Test Stream
+              </a>
+              <button onclick="deleteAsset('${item.id}', '${item.file_name}', '${item.file_id || ''}')" 
+                      class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded transition">
+                Delete 🗑️
+              </button>
+            </div>
           </div>
         `).join('');
 
       } catch (err) {
         listContainer.innerHTML = `<div class="text-red-400 text-xs text-center py-4">Failed to load inventory: ${err.message}</div>`;
+      }
+    }
+
+    async function deleteAsset(id, fileName, fileId) {
+      if (!confirm(`Are you sure you want to delete "${fileName}"? This will delete it from both B2 and Database.`)) {
+        return;
+      }
+
+      try {
+        // 1. Worker me B2 delete request bhejo
+        const deleteRes = await fetch(`${WORKER_URL}/delete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: fileName,
+            fileId: fileId || undefined
+          })
+        });
+
+        if (!deleteRes.ok) {
+          const errText = await deleteRes.text();
+          console.warn(`B2 Delete Warning: ${errText}`);
+        }
+
+        // 2. Supabase DB se Delete karo
+        const { error } = await supabaseClient
+          .from('assets')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        alert('Asset successfully deleted from B2 & Supabase! 🗑️');
+        fetchAssets();
+
+      } catch (err) {
+        console.error(err);
+        alert(`Delete Error: ${err.message}`);
       }
     }
 
