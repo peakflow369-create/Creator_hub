@@ -140,14 +140,15 @@
         }
 
         const uploadedFileName = uploadData.file_name;
-        const selectedVault = document.getElementById('assetCategory').value;
+        // Forced lowercase to match frontend category logic
+        const selectedVault = document.getElementById('assetCategory').value.toLowerCase().trim();
 
         submitBtn.innerText = '2/2 Saving to Supabase Database... 🔄';
 
-        // Direct payload without file_id
         const payload = {
           title: document.getElementById('assetTitle').value.trim(),
-          category: selectedVault.toUpperCase(),
+          category: selectedVault,
+          vault_type: selectedVault,
           file_size: document.getElementById('assetSize').value,
           file_name: uploadedFileName
         };
