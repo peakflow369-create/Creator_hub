@@ -35,7 +35,7 @@
     }
   </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen relative overflow-x-hidden">
+<body class="p-4 md:p-8 min-h-screen relative overflow-x-hidden flex flex-col justify-between">
 
   <!-- APP OPENING ANIMATION OVERLAY -->
   <div id="splashScreen" class="fixed inset-0 z-50 bg-[#080c14] flex flex-col items-center justify-center transition-opacity duration-700 pointer-events-auto">
@@ -58,7 +58,7 @@
   </div>
 
   <!-- MAIN APP CONTAINER -->
-  <div id="appContent" class="opacity-0 transition-opacity duration-700">
+  <div id="appContent" class="opacity-0 transition-opacity duration-700 flex-1">
 
     <!-- Header Section -->
     <header class="mb-6 flex justify-between items-center border-b border-slate-800/80 pb-4">
@@ -74,7 +74,7 @@
     </header>
 
     <!-- Category Selection Section -->
-    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 
       <!-- SFX Pack Card -->
       <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex flex-col justify-between hover:border-cyan-500/50 transition">
@@ -126,7 +126,23 @@
 
     </main>
 
+    <!-- Support & Requests Banner -->
+    <section class="bg-slate-900/40 border border-slate-800 p-4 rounded-xl text-center max-w-xl mx-auto mb-6">
+      <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">Have an Issue or Asset Request?</h3>
+      <p class="text-xs text-slate-400 mb-3">Want new sound effects, LUTs, or features added to the app? Reach out directly.</p>
+      <a href="mailto:peakflowio.businessautomation@gmail.com?subject=Creator%20Hub%20Issue%20or%20Request" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold transition">
+        ✉️ Contact Support
+      </a>
+    </section>
+
   </div>
+
+  <!-- Bottom Branding Watermark Footer -->
+  <footer class="mt-auto border-t border-slate-800/60 pt-4 pb-2 text-center">
+    <p class="text-xs text-slate-500 font-mono">
+      Created by <span class="text-cyan-400 font-bold">peakflowio</span>
+    </p>
+  </footer>
 
   <!-- Detail Asset Modal -->
   <div id="vaultModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex-col justify-end sm:justify-center p-0 sm:p-6 z-50">
@@ -158,44 +174,40 @@
   </div>
 
   <script>
+    // 1. Storage & Proxy Configuration
+    const WORKER_PROXY_URL = 'https://creator-hub-proxy.peakflowio-businessautomation.workers.dev/';
     const SUPABASE_URL = 'https://bukpvrphgjoqrffwlwys.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FB93AZKw6tW8tVJpPlD3eA_8ygbt67J';
 
     // Initialize official Supabase Client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Track currently playing audio element
+    let currentAudio = null;
+
     // App Opening Animation Handling
     window.addEventListener('DOMContentLoaded', () => {
       const splashScreen = document.getElementById('splashScreen');
       const appContent = document.getElementById('appContent');
 
-      // Hold splash screen for 1.6 seconds, then fade out smoothly
       setTimeout(() => {
         splashScreen.classList.add('opacity-0');
         splashScreen.classList.add('pointer-events-none');
         appContent.classList.remove('opacity-0');
 
-        // Unmount splash screen after fade duration finishes
         setTimeout(() => {
           splashScreen.style.display = 'none';
         }, 700);
       }, 1600);
     });
 
-    // Extract raw Google Drive File ID and convert to direct binary download format
-    function normalizeDirectDownloadLink(url) {
-      if (!url) return '#';
-      let fileId = '';
-      if (url.includes('/file/d/')) {
-        fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
-      } else if (url.includes('id=')) {
-        fileId = url.split('id=')[1].split('&')[0];
-      }
-
-      if (fileId) {
-        return `https://drive.google.com/uc?id=${fileId}&export=download`;
-      }
-      return url;
+    /**
+     * Builds proxy stream and download URL for Backblaze B2 assets
+     * @param {string} fileName - Exact filename in Backblaze B2 bucket
+     */
+    function getProxyUrl(fileName) {
+      if (!fileName) return '#';
+      return `${WORKER_PROXY_URL}?file=${encodeURIComponent(fileName)}`;
     }
 
     async function openVaultModal(category, driveLink) {
@@ -206,13 +218,13 @@
 
       modalTitle.innerText = category + ' Assets';
       driveFolderBtn.href = driveLink;
-      modalContent.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Checking for live uploaded assets...</p>';
+      modalContent.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Connecting to Asset Proxy...</p>';
       
       modal.classList.remove('hidden');
       modal.classList.add('flex');
 
       try {
-        // Query Supabase database using SDK
+        // Fetch live records from Supabase
         const { data: items, error } = await supabaseClient
           .from('assets')
           .select('*')
@@ -223,38 +235,75 @@
 
         if (items && items.length > 0) {
           modalContent.innerHTML = '';
-          items.forEach(item => {
-            const directUrl = normalizeDirectDownloadLink(item.download_url);
-            
+          items.forEach((item, index) => {
+            const targetFileName = item.file_name || item.title;
+            const fileStreamUrl = getProxyUrl(targetFileName);
+            const isAudioCategory = category === 'SFX Packs' || category === 'SFX';
+
             modalContent.innerHTML += `
-              <div class="bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 overflow-hidden">
-                  <span class="text-xl">🎵</span>
-                  <div class="truncate">
-                    <h4 class="text-xs font-semibold text-white truncate">${item.title}</h4>
-                    <p class="text-[10px] text-slate-400">${item.file_size}</p>
+              <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-xl flex flex-col gap-3">
+                <div class="flex items-center justify-between gap-3 overflow-hidden">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <span class="text-xl shrink-0">${isAudioCategory ? '🎵' : '📁'}</span>
+                    <div class="truncate">
+                      <h4 class="text-xs font-semibold text-white truncate">${item.title}</h4>
+                      <p class="text-[10px] text-slate-400 font-mono mt-0.5">${item.file_size || 'B2 Vault Asset'}</p>
+                    </div>
                   </div>
+                  
+                  <a href="${fileStreamUrl}" download target="_blank" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition">
+                    Download
+                  </a>
                 </div>
-                <a href="${directUrl}" download target="_self" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition">
-                  Download
-                </a>
+
+                ${isAudioCategory ? `
+                  <!-- Embedded Mobile Audio Preview Player -->
+                  <div class="w-full bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex items-center gap-2">
+                    <audio id="audio-player-${index}" src="${fileStreamUrl}" preload="none" class="w-full h-8 text-xs accent-cyan-400"></audio>
+                    <button onclick="toggleAudio('audio-player-${index}')" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 text-[11px] font-bold px-3 py-1 rounded shrink-0">
+                      Play / Pause
+                    </button>
+                  </div>
+                ` : ''}
               </div>
             `;
           });
         } else {
           modalContent.innerHTML = `
             <div class="text-center py-8 bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
-              <p class="text-xs text-slate-400 mb-2">No individual audio files uploaded via Admin App yet.</p>
-              <p class="text-[11px] text-slate-500">You can download the full folder directly from Google Drive below.</p>
+              <p class="text-xs text-slate-400 mb-2">No items uploaded in this category yet.</p>
+              <p class="text-[11px] text-slate-500">Upload asset metadata via admin.html or download full backup below.</p>
             </div>
           `;
         }
       } catch (err) {
-        modalContent.innerHTML = `<p class="text-xs text-red-400 text-center py-6">Failed to load live files: ${err.message || err}</p>`;
+        modalContent.innerHTML = `<p class="text-xs text-red-400 text-center py-6">Vault Connection Error: ${err.message || err}</p>`;
+      }
+    }
+
+    /**
+     * Controls single-track playback across modal cards
+     */
+    function toggleAudio(playerId) {
+      const player = document.getElementById(playerId);
+      if (!player) return;
+
+      if (currentAudio && currentAudio !== player) {
+        currentAudio.pause();
+      }
+
+      if (player.paused) {
+        player.play();
+        currentAudio = player;
+      } else {
+        player.pause();
       }
     }
 
     function closeVaultModal() {
+      if (currentAudio) {
+        currentAudio.pause();
+      }
       const modal = document.getElementById('vaultModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
