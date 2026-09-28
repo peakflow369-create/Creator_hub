@@ -36,14 +36,14 @@
       <form id="uploadForm" onsubmit="handleDirectUpload(event)" class="space-y-4">
         <div>
           <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Display Title</label>
-          <input type="text" id="assetTitle" required placeholder="e.g. 5 Free Cinematic Whoosh Sound" 
+          <input type="text" id="assetTitle" required placeholder="e.g. Sleeping song" 
                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
         </div>
 
         <div>
           <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Target Section / Vault</label>
           <select id="assetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
-            <option value="sfx">SFX Vault (Whoosh, Riser, Audio)</option>
+            <option value="sfx">SFX Vault (Whoosh, Audio, Music)</option>
             <option value="overlay">Overlay Vault (Film Grain, Textures)</option>
             <option value="lut">LUT Vault (Color Presets, LUTs)</option>
             <option value="presets">Presets Vault (Transitions, Motion)</option>
@@ -140,18 +140,16 @@
         }
 
         const uploadedFileName = uploadData.file_name;
-        const uploadedFileId = uploadData.file_id || null;
         const selectedVault = document.getElementById('assetCategory').value;
 
         submitBtn.innerText = '2/2 Saving to Supabase Database... 🔄';
 
+        // Direct payload without file_id
         const payload = {
           title: document.getElementById('assetTitle').value.trim(),
           category: selectedVault.toUpperCase(),
-          vault_type: selectedVault,
           file_size: document.getElementById('assetSize').value,
-          file_name: uploadedFileName,
-          file_id: uploadedFileId
+          file_name: uploadedFileName
         };
 
         const { error } = await supabaseClient
@@ -160,7 +158,7 @@
 
         if (error) throw error;
 
-        alert(`Success! File uploaded and targeted to ${selectedVault.toUpperCase()} Vault! 🚀`);
+        alert(`Success! File uploaded successfully to B2 & Supabase! 🚀`);
         document.getElementById('uploadForm').reset();
         fetchAssets();
 
@@ -195,14 +193,14 @@
           <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-lg flex items-center justify-between text-xs gap-2">
             <div class="overflow-hidden">
               <p class="font-medium text-slate-200 truncate">${item.title}</p>
-              <p class="text-slate-500 mt-0.5">Vault: <span class="text-amber-400 font-bold">${item.vault_type || item.category}</span> • ${item.file_size}</p>
+              <p class="text-slate-500 mt-0.5">Category: <span class="text-amber-400 font-bold">${item.category}</span> • ${item.file_size}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <a href="${WORKER_URL}?file=${encodeURIComponent(item.file_name)}" target="_blank" 
                  class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded transition">
                 Test Stream
               </a>
-              <button onclick="deleteAsset('${item.id}', '${item.file_name}', '${item.file_id || ''}')" 
+              <button onclick="deleteAsset('${item.id}', '${item.file_name}')" 
                       class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded transition">
                 Delete 🗑️
               </button>
@@ -215,8 +213,8 @@
       }
     }
 
-    async function deleteAsset(id, fileName, fileId) {
-      if (!confirm(`Are you sure you want to delete "${fileName}"? This will delete it from both B2 and Database.`)) {
+    async function deleteAsset(id, fileName) {
+      if (!confirm(`Are you sure you want to delete "${fileName}"? This will delete it from B2 and Database.`)) {
         return;
       }
 
@@ -224,10 +222,7 @@
         const deleteRes = await fetch(`${WORKER_URL}/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileName: fileName,
-            fileId: fileId || undefined
-          })
+          body: JSON.stringify({ fileName: fileName })
         });
 
         if (!deleteRes.ok) {
