@@ -3,84 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TCH - Fully Automated Admin Vault</title>
+  <title>Admin Control Panel</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { background-color: #080c14; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
-  </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
 
-  <div class="max-w-3xl mx-auto">
-    <header class="mb-6 flex justify-between items-center border-b border-slate-800 pb-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400">ADM</div>
+  <div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center border border-amber-500/30">
+          ADM
+        </div>
         <div>
-          <h1 class="text-xl font-black text-amber-400 tracking-wide">ADMIN CONTROL PANEL</h1>
+          <h1 class="text-xl font-bold tracking-wide text-amber-400">ADMIN CONTROL PANEL</h1>
           <p class="text-xs text-slate-400">@peakflowio • Automated B2 Sync</p>
         </div>
       </div>
-      <span id="dbStatus" class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-mono font-bold">Connecting...</span>
-    </header>
+      <div class="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-semibold text-emerald-400">Connected</span>
+      </div>
+    </div>
 
-    <section class="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8 shadow-xl">
-      <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+    <!-- Form Container -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
+      <h2 class="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
         <span>⚡</span> Direct File Upload to B2 & Vault Database
       </h2>
 
       <form id="uploadForm" onsubmit="handleDirectUpload(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Display Title</label>
-          <input type="text" id="assetTitle" required placeholder="e.g. 5 Free Cinematic Whoosh Sound" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400">
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Category</label>
-            <select id="assetCategory" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400">
-              <option value="SFX Packs">SFX Packs</option>
-              <option value="Overlays">Overlays</option>
-              <option value="LUTs">LUTs</option>
-              <option value="Presets">Presets</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Select File (Audio, SFX, Video, Zip)</label>
-            <input type="file" id="fileInput" required onchange="autoDetectSize(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-400 focus:outline-none focus:border-amber-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20 cursor-pointer">
-          </div>
+          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Display Title</label>
+          <input type="text" id="assetTitle" required placeholder="e.g. 5 Free Cinematic Whoosh Sound" 
+                 class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Calculated Size</label>
-          <input type="text" id="assetSize" readonly placeholder="Auto-detecting file size..." class="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-500 outline-none">
+          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Category</label>
+          <select id="assetCategory" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
+            <option value="SFX Packs">SFX Packs</option>
+            <option value="Audio Elements">Audio Elements</option>
+            <option value="Video Assets">Video Assets</option>
+            <option value="Presets">Presets</option>
+          </select>
         </div>
 
-        <button type="submit" id="submitBtn" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2">
-          <span>Upload File & Publish 🚀</span>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Select File (Audio, SFX, Video, Zip)</label>
+          <input type="file" id="fileInput" required onchange="autoDetectSize(this)" 
+                 class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-500/20 file:text-amber-400 hover:file:bg-amber-500/30 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Calculated Size</label>
+          <input type="text" id="assetSize" readonly placeholder="Auto-calculated" 
+                 class="w-full bg-slate-950/50 border border-slate-800/80 rounded-lg px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed">
+        </div>
+
+        <button type="submit" id="submitBtn" 
+                class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-3 px-4 rounded-lg transition shadow-lg shadow-amber-500/10 active:scale-[0.99]">
+          Upload File & Publish 🚀
         </button>
       </form>
-    </section>
+    </div>
 
-    <section>
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-base font-bold text-white flex items-center gap-2">
+    <!-- Inventory Section -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
           <span>📦</span> Live Vault Inventory
-        </h2>
+        </h3>
         <button onclick="fetchAssets()" class="text-xs text-amber-400 hover:underline">Refresh List</button>
       </div>
 
-      <div id="inventoryContainer" class="space-y-3">
-        <p class="text-xs text-slate-500 text-center py-8">Loading inventory...</p>
+      <div id="assetsList" class="space-y-2">
+        <div class="text-center py-8 bg-slate-900/50 border border-slate-800/60 rounded-xl text-xs text-slate-500">
+          Loading assets...
+        </div>
       </div>
-    </section>
+    </div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://bukpvrphgjoqrffwlwys.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FB93AZKw6tW8tVJpPlD3eA_8ygbt67J';
-    const WORKER_URL = 'https://essaautomation.workers.dev';
+    const WORKER_URL = 'https://creator-hub-proxy.peakflowio-businessautomation.workers.dev';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -104,7 +113,7 @@
       const file = fileInput.files[0];
 
       if (!file) {
-        alert('File select nahi kiya bro!');
+        alert('File select nahi ki!');
         return;
       }
 
@@ -112,26 +121,30 @@
       submitBtn.innerText = '1/2 Uploading to Backblaze B2... ⏳';
 
       try {
-        // Step 1: Send File to Worker (Worker uploads directly to Backblaze)
         const formData = new FormData();
         formData.append('file', file);
 
+        // Upload Request to Worker
         const uploadRes = await fetch(`${WORKER_URL}/upload`, {
           method: 'POST',
           body: formData
         });
 
         if (!uploadRes.ok) {
-          const errData = await uploadRes.json();
-          throw new Error(errData.error || 'Backblaze upload fail ho gaya.');
+          const errText = await uploadRes.text();
+          throw new Error(`Worker Error (${uploadRes.status}): ${errText}`);
         }
 
         const uploadData = await uploadRes.json();
+        if (!uploadData.success) {
+          throw new Error(uploadData.error || 'Upload failed');
+        }
+
         const uploadedFileName = uploadData.file_name;
 
         submitBtn.innerText = '2/2 Saving to Supabase Database... 🔄';
 
-        // Step 2: Insert Exact Filename into Supabase
+        // Insert to Supabase Database
         const payload = {
           title: document.getElementById('assetTitle').value.trim(),
           category: document.getElementById('assetCategory').value,
@@ -145,12 +158,13 @@
 
         if (error) throw error;
 
-        alert('Done! B2 pe upload ho gaya aur database index bhi ho gaya! 🚀');
+        alert('Success! File B2 par upload ho gayi aur Database update ho gaya! 🚀');
         document.getElementById('uploadForm').reset();
         fetchAssets();
 
       } catch (err) {
-        alert(`Error: ${err.message}`);
+        console.error(err);
+        alert(`Upload Error: ${err.message}`);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Upload File & Publish 🚀';
@@ -158,58 +172,43 @@
     }
 
     async function fetchAssets() {
-      const container = document.getElementById('inventoryContainer');
-      const statusBadge = document.getElementById('dbStatus');
+      const listContainer = document.getElementById('assetsList');
+      try {
+        const { data, error } = await supabaseClient
+          .from('assets')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      const { data: items, error } = await supabaseClient
-        .from('assets')
-        .select('*')
-        .order('created_at', { ascending: false });
+        if (error) throw error;
 
-      if (error) {
-        statusBadge.innerText = 'Connection Error 🔴';
-        statusBadge.className = 'bg-red-500/10 text-red-400 border border-red-500/30 text-xs px-3 py-1 rounded-full font-mono font-bold';
-        container.innerHTML = `<p class="text-xs text-red-400 text-center py-6">Database Error: ${error.message}</p>`;
-        return;
-      }
+        if (!data || data.length === 0) {
+          listContainer.innerHTML = `
+            <div class="text-center py-8 bg-slate-900/50 border border-slate-800/60 rounded-xl text-xs text-slate-500">
+              No assets published yet.
+            </div>`;
+          return;
+        }
 
-      statusBadge.innerText = 'Connected 🟢';
-      statusBadge.className = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-mono font-bold';
-
-      if (!items || items.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 bg-slate-900/50 rounded-xl border border-dashed border-slate-800"><p class="text-xs text-slate-400">No assets published yet.</p></div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      items.forEach(item => {
-        container.innerHTML += `
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between gap-4">
-            <div class="truncate">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-[10px] bg-slate-800 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono">${item.category}</span>
-                <span class="text-[10px] text-slate-500">${item.file_size}</span>
-              </div>
-              <h4 class="text-xs font-bold text-white truncate">${item.title}</h4>
-              <p class="text-[10px] text-slate-400 font-mono truncate block mt-0.5">${item.file_name || 'No filename set'}</p>
+        listContainer.innerHTML = data.map(item => `
+          <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-lg flex items-center justify-between text-xs">
+            <div>
+              <p class="font-medium text-slate-200">${item.title}</p>
+              <p class="text-slate-500 mt-0.5">${item.category} • ${item.file_size}</p>
             </div>
-            <button onclick="deleteAsset(${item.id})" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 text-xs px-3 py-1.5 rounded-lg font-bold transition shrink-0">
-              Delete
-            </button>
+            <a href="${WORKER_URL}?file=${encodeURIComponent(item.file_name)}" target="_blank" 
+               class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded transition">
+              Test Stream
+            </a>
           </div>
-        `;
-      });
+        `).join('');
+
+      } catch (err) {
+        listContainer.innerHTML = `<div class="text-red-400 text-xs text-center py-4">Failed to load inventory: ${err.message}</div>`;
+      }
     }
 
-    async function deleteAsset(id) {
-      if (!confirm('Are you sure you want to delete this asset?')) return;
-      const { error } = await supabaseClient.from('assets').delete().eq('id', id);
-      if (error) alert(`Delete failed: ${error.message}`);
-      else fetchAssets();
-    }
-
+    // Load inventory on startup
     fetchAssets();
   </script>
-
 </body>
 </html>
