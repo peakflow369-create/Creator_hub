@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Creator Hub">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Official Supabase JS SDK -->
@@ -317,6 +318,17 @@
       const modal = document.getElementById('vaultModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+    }
+  </script>
+
+  <!-- Service Worker Registration for PWA Installation -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered successfully with scope:', reg.scope))
+          .catch((err) => console.error('Service Worker registration failed:', err));
+      });
     }
   </script>
 
