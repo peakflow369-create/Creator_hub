@@ -1,24 +1,62 @@
 {
+  "name": "Creator Hub",
   "short_name": "Creator Hub",
-  "name": "The Creator Hub - Assets Vault",
   "description": "Premium video assets, presets, and audio production vault.",
+  "id": "/?pwa=creatorhub",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "tabbed",
+    "standalone"
+  ],
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity"],
   "icons": [
     {
-      "src": "icon-192.png",
-      "type": "image/png",
+      "src": "icons/icon-192x192.png",
       "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
-      "type": "image/png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/index.html",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
-  "display": "standalone",
-  "orientation": "portrait"
+  "screenshots": [
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Creator Hub Dashboard"
+    },
+    {
+      "src": "screenshots/mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Vault Interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Assets Vault",
+      "short_name": "Assets",
+      "description": "Quick access to video presets and assets",
+      "url": "/#assets",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
