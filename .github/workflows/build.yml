@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -21,12 +21,33 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Install Expo & EAS CLI
+        run: |
+          npm install -g expo-cli eas-cli
+
+      - name: Auto-generate package.json if missing
+        run: |
+          if [ ! -f package.json ]; then
+            npm init -y
+            npm install expo expo-av expo-linking react react-native
+          fi
+
+      - name: Auto-generate eas.json for Local APK Build
+        run: |
+          cat <<EOF > eas.json
+          {
+            "build": {
+              "preview": {
+                "android": {
+                  "buildType": "apk"
+                }
+              }
+            }
+          }
+          EOF
 
       - name: Build APK locally via EAS
         run: |
-          npm install
           npx eas-cli build --platform android --profile preview --local --non-interactive
 
       - name: Upload APK Artifact
