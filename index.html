@@ -381,12 +381,15 @@
     }
   </script>
 
-  <!-- Service Worker Registration for PWA Installation -->
+  <!-- Forced SW Registration with Auto Cache-Bust Query -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then((reg) => console.log('Service Worker registered successfully with scope:', reg.scope))
+        navigator.serviceWorker.register('./sw.js?v=' + Date.now())
+          .then((reg) => {
+            console.log('Service Worker registered successfully with scope:', reg.scope);
+            reg.update();
+          })
           .catch((err) => console.error('Service Worker registration failed:', err));
       });
     }
