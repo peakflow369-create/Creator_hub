@@ -94,7 +94,7 @@
           <h2 class="font-bold text-base text-white">Cinematic Whoosh SFX</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">High Quality Sound Effects & Transitions</p>
         </div>
-        <button onclick="openVaultModal('sfx', 'SFX Vault', 'https://drive.google.com/drive/folders/1vwJLqIEzDNXOapIzxnpNmJXfPiMLUVMI')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('sfx', 'SFX Vault')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open SFX Vault
         </button>
       </div>
@@ -106,7 +106,7 @@
           <h2 class="font-bold text-base text-white">4K Film Grain Overlay</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Realistic Retro Textures & Video Overlays</p>
         </div>
-        <button onclick="openVaultModal('overlay', 'Overlay Vault', 'https://drive.google.com/drive/folders/1RKP49DJUzR-mmasWaFoMmqamD1K2tU3L')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('overlay', 'Overlay Vault')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open Overlay Vault
         </button>
       </div>
@@ -118,7 +118,7 @@
           <h2 class="font-bold text-base text-white">Teal & Orange LUT Pack</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Professional Color Grading Presets</p>
         </div>
-        <button onclick="openVaultModal('lut', 'LUT Vault', 'https://drive.google.com/drive/folders/1MDXU0DMzD8gRBjSKko7KwIGRZqC5Ex34')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('lut', 'LUT Vault')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open LUT Vault
         </button>
       </div>
@@ -130,7 +130,7 @@
           <h2 class="font-bold text-base text-white">Motion Transitions Pack</h2>
           <p class="text-xs text-slate-400 mt-1 mb-4">Smooth Premiere & After Effects Presets</p>
         </div>
-        <button onclick="openVaultModal('presets', 'Presets Vault', 'https://drive.google.com/drive/folders/1VcRidY6pHKRcQBrzEDy_TDwVKcGrs9yH')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openVaultModal('presets', 'Presets Vault')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-center py-2.5 rounded-lg font-bold text-xs transition">
           Open Presets Vault
         </button>
       </div>
@@ -163,7 +163,7 @@
       <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
         <div>
           <h3 id="modalTitle" class="text-lg font-bold text-white">Category Vault</h3>
-          <p class="text-xs text-slate-400">Available Files & Cloud Drive Mirror</p>
+          <p class="text-xs text-slate-400">Available Asset Files</p>
         </div>
         <button onclick="closeVaultModal()" class="text-slate-400 hover:text-white text-xl font-bold p-2">✕</button>
       </div>
@@ -185,13 +185,6 @@
         <button onclick="triggerPremiumAlert()" class="w-full sm:w-auto bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
           🔒 Premium Download
         </button>
-      </div>
-
-      <!-- Google Drive Mirror Link -->
-      <div class="pt-3 flex justify-end">
-        <a id="driveFolderBtn" href="#" target="_blank" class="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold">
-          Open Google Drive Folder ↗
-        </a>
       </div>
 
     </div>
@@ -287,14 +280,12 @@
       return `${WORKER_PROXY_URL}?file=${encodeURIComponent(fileName)}`;
     }
 
-    async function openVaultModal(categoryKey, displayTitle, driveLink) {
+    async function openVaultModal(categoryKey, displayTitle) {
       const modal = document.getElementById('vaultModal');
       const modalTitle = document.getElementById('modalTitle');
       const modalContent = document.getElementById('modalContent');
-      const driveFolderBtn = document.getElementById('driveFolderBtn');
 
       modalTitle.innerText = displayTitle;
-      driveFolderBtn.href = driveLink;
       modalContent.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Connecting to Asset Proxy...</p>';
       
       modal.classList.remove('hidden');
