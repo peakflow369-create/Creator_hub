@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "The Creator Hub",
+    "slug": "creator-hub",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./icon-512x512.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./icon-512x512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080c14"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./icon-512x512.png",
+        "backgroundColor": "#080c14"
+      },
+      "package": "com.peakflowio.creatorhub"
+    }
+  }
+}
